@@ -129,6 +129,40 @@ const addTodo = async (req, res) => {
   res.status(201).json({ message: "todo added successfully", todo });
 };
 
-const getTodo = () => {};
+const getTodo = async (req, res) => {
+  const userId = req.user.id;
+
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ message: "User not authroized to perform this action" });
+  }
+
+  const todoId = req.params.id;
+
+  console.log("todoController => getTodo => todoId", todoId);
+
+  if (!todoId) {
+    return res.status(400).json({ message: "No todo found" });
+  }
+
+  const todo = await Todo.findOne({ _id: todoId });
+
+  console.log("todoController => getTodo => todo", todo);
+
+  if (!todo) {
+    return res
+      .status(400)
+      .json({ message: "No todo found with this associated id" });
+  }
+
+  if (userId !== todo.user.toString()) {
+    return res
+      .status(401)
+      .json({ message: "User not authorized to perform this action" });
+  }
+
+  res.status(200).json({ message: "Todo fetched successfully", todo });
+};
 
 export { addTodo, editTodo, deleteTodo, getAllTodos, getTodo };
